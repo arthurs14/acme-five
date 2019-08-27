@@ -26,7 +26,6 @@
       const root = document.querySelector('#root');
 
       const Nav = ({ products }) => {
-        //products.forEach(product => console.log(product.suggestedPrice));
         const underFive = products.filter(product => product.suggestedPrice < 5);
         return(
           <nav>
@@ -36,6 +35,23 @@
         );
       };
 
+      const Product = ({ match, products }) => {
+        const product = products.find(item => item.id === match.params.id);
+        return (
+          <div>
+            <ul>
+              {
+                product.offers.map(offer =>
+                <li key={offer.id}>
+                  Offered at ${offer.price.toFixed(2)} <br />
+                  by {offer.company[0].name}
+                </li>)
+              }
+            </ul>
+          </div>
+        );
+      }
+
       const UnderFive = ({ products }) => {
         const underFive = products.filter(product => product.suggestedPrice < 5);
         return (
@@ -44,18 +60,31 @@
               {
                 underFive.map(product =>
                   <li key={ product.id }>
-                    <Link to={`products/underFive/${product.id}`}>{ product.name }</Link> <br />
+                    <Link to={`/products/underFive/${product.id}`}>{ product.name }</Link> <br />
                     ${ product.suggestedPrice.toFixed(2) }
                   </li>)
               }
             </ul>
+            <Route path='/products/underFive/:id' render={({match}) => <Product match={match} products={ underFive } />} />
           </div>
         );
       };
 
       const FiveAndOver = ({ products }) => {
+        const fiveAndOver = products.filter(product => product.suggestedPrice >= 5);
         return(
-          <h1>Hello from 5 and over page</h1>
+          <div>
+            <ul>
+              {
+                fiveAndOver.map(product =>
+                  <li key={product.id}>
+                    <Link to={`/products/fiveAndOver/${product.id}`}>{product.name}</Link> <br />
+                    ${ product.suggestedPrice.toFixed(2) }
+                  </li>)
+              }
+            </ul>
+            <Route path='/products/fiveAndOver/:id' render={({ match }) => <Product match={match} products={fiveAndOver} /> } />
+          </div>
         );
       };
 
@@ -99,8 +128,8 @@
             <HashRouter>
               <Route render={ () => <Nav products={ products }/> } />
               <Switch>
-                <Route exact path='/products/underFive' render={()=> <UnderFive products={ products } /> } />
-                <Route path='/products/fiveAndOver' render={() => <FiveAndOver products={ products } /> } />
+                <Route exact path='/products/underFive/:id?' render={()=> <UnderFive products={ products } /> } />
+                <Route path='/products/fiveAndOver/:id?' render={() => <FiveAndOver products={ products } /> } />
                 <Redirect to='/products/underFive' />
               </Switch>
             </HashRouter>
