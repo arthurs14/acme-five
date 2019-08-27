@@ -22,6 +22,7 @@
       const { Component } = React;
       const { HashRouter, Route, Link, Switch, Redirect } = ReactRouterDOM;
 
+      const API = 'https://acme-users-api-rev.herokuapp.com/api'
       const root = document.querySelector('#root');
 
       const Nav = () => {
@@ -46,6 +47,29 @@
       };
 
       class App extends Component {
+        constructor () {
+          super();
+          this.state = {
+            products: []
+          };
+        }
+
+        async componentDidMount() {
+          const urls = [
+            `${API}/products`,
+            `${API}/offerings`,
+            `${API}/companies`
+          ]
+
+          const responses = await Promise.all(urls.map(url => axios.get(url)));
+
+          const [products, offerings, companies] = responses.map(response => response.data);
+
+          console.log('products', products);
+          console.log('offerings', offerings);
+          console.log('companies', companies);
+        }
+
         render() {
           return (
             <HashRouter>
