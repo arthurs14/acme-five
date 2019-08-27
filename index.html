@@ -25,22 +25,35 @@
       const API = 'https://acme-users-api-rev.herokuapp.com/api'
       const root = document.querySelector('#root');
 
-      const Nav = () => {
+      const Nav = ({ products }) => {
+        //products.forEach(product => console.log(product.suggestedPrice));
+        const underFive = products.filter(product => product.suggestedPrice < 5);
         return(
           <nav>
-            <Link to='/products/underFive'>Under $5</Link>
-            <Link to='/products/fiveAndOver'>$5 and Over</Link>
+            <Link to='/products/underFive'>Under $5 ({underFive.length})</Link>
+            <Link to='/products/fiveAndOver'>$5 and Over ({products.length - underFive.length})</Link>
           </nav>
         );
       };
 
-      const UnderFive = () => {
+      const UnderFive = ({ products }) => {
+        const underFive = products.filter(product => product.suggestedPrice < 5);
         return (
-          <h1>Hello from under five page</h1>
+          <div>
+            <ul>
+              {
+                underFive.map(product =>
+                  <li key={ product.id }>
+                    <Link to={`products/underFive/${product.id}`}>{ product.name }</Link> <br />
+                    ${ product.suggestedPrice.toFixed(2) }
+                  </li>)
+              }
+            </ul>
+          </div>
         );
       };
 
-      const FiveAndOver = () => {
+      const FiveAndOver = ({ products }) => {
         return(
           <h1>Hello from 5 and over page</h1>
         );
@@ -65,18 +78,29 @@
 
           const [products, offerings, companies] = responses.map(response => response.data);
 
-          console.log('products', products);
-          console.log('offerings', offerings);
-          console.log('companies', companies);
+          const processed = products.map(product => {
+            const offers = offerings.filter(offer => {
+              return product.id === offer.productId;
+            })
+            const companyOffers = offers.map(offer => {
+              const _company = companies.filter(company =>{
+                return company.id === offer.companyId;
+              })
+              return {...offer, company: _company}
+            })
+            return { ...product, offers: companyOffers };
+          })
+          this.setState({ products: processed })
         }
 
         render() {
+          const { products } = this.state;
           return (
             <HashRouter>
-              <Route render={ () => <Nav /> } />
+              <Route render={ () => <Nav products={ products }/> } />
               <Switch>
-                <Route exact path='/products/underFive' render={()=> <UnderFive /> } />
-                <Route path='/products/fiveAndOver' render={() => <FiveAndOver /> } />
+                <Route exact path='/products/underFive' render={()=> <UnderFive products={ products } /> } />
+                <Route path='/products/fiveAndOver' render={() => <FiveAndOver products={ products } /> } />
                 <Redirect to='/products/underFive' />
               </Switch>
             </HashRouter>
